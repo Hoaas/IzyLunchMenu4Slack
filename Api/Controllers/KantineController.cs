@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Api.Models.Slack;
 using Microsoft.AspNetCore.Mvc;
@@ -38,25 +41,26 @@ namespace Api.Controllers
 
         private async Task<SlackMessage> CreateSlackMessage()
         {
+            var specificDay = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
+
             var menu = await _menuService.FetchMenu();
 
             var message = new SlackMessage
             {
-                attachments = new List<SlackAttachment>()
+                text = specificDay
             };
 
-            foreach (var day in menu.Keys)
-            {
-                foreach (var menuItem in menu[day])
-                {
-                    message.attachments.Add(new SlackAttachment
-                    {
-                        text = menuItem
-                    });
-                }
+            message.attachments.AddRange(CreateSlackAttachment(menu[specificDay]));
 
-            }
             return message;
+        }
+
+        private static IEnumerable<SlackAttachment> CreateSlackAttachment(IEnumerable<string> meals)
+        {
+            return meals.Select(meal => new SlackAttachment
+            {
+                text = meal
+            });
         }
     }
 }

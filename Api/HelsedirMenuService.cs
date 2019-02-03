@@ -18,17 +18,19 @@ namespace Api
         public async Task<Dictionary<string, List<string>>> FetchMenu()
         {
             var menu = await _menuFetcher.ReadMenu();
-            var menuAsText = ReadTextMenu(menu);
-            return ParsedText(menuAsText);
+
+            var menuAsText = ReadMenuResponseAsText(menu);
+
+            return ParseTextMenu(menuAsText);
         }
 
-        private static string ReadTextMenu(WorkplaceResponse parseResponse)
+        private static string ReadMenuResponseAsText(WorkplaceResponse parseResponse)
         {
             var text = parseResponse.Body.Data?.First().Description;
             return text;
         }
 
-        private static Dictionary<string, List<string>> ParsedText(string text)
+        private static Dictionary<string, List<string>> ParseTextMenu(string text)
         {
             var dic = new Dictionary<string, List<string>>();
             var lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
@@ -63,11 +65,13 @@ namespace Api
 
         private static bool IsNewDay(string line)
         {
-            return line == "Mandag"
-                || line == "Tirsdag"
-                || line == "Onsdag"
-                || line == "Torsdag"
-                || line == "Fredag";
+            line = line.ToLower();
+
+            return line == "mandag"
+                || line == "tirsdag"
+                || line == "onsdag"
+                || line == "torsdag"
+                || line == "fredag";
         }
     }
 }
