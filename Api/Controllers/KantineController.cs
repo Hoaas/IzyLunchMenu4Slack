@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Api.Models.Slack;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers

@@ -25,9 +25,4 @@ namespace Api
 
         }
     }
-
-    public interface IHelsedirMenuFetcher
-    {
-        Task<WorkplaceResponse> ReadMenu();
-    }
 }
