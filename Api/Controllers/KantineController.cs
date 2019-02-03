@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
     public class KantineController : ControllerBase
     {
         private readonly IHelsedirMenuService _menuService;
@@ -16,6 +15,7 @@ namespace Api.Controllers
             _menuService = menuService;
         }
 
+        [Route("/")]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
