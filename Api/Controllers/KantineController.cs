@@ -41,26 +41,44 @@ namespace Api.Controllers
 
         private async Task<SlackMessage> CreateSlackMessage()
         {
-            var specificDay = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
 
             var menu = await _menuService.FetchMenu();
 
+            var specificDay = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
+
+            var tries = 0;
+
+            List<string> meals;
+            while (!menu.TryGetValue(CultureInfo.InvariantCulture.TextInfo.ToTitleCase(specificDay), out meals))
+            {
+                tries++;
+
+                specificDay = DateTime.Now.AddDays(tries).ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
+                if (tries <= 7) continue;
+
+                return new SlackMessage
+                {
+                    text = "Ingen måltider funnet :("
+                };
+            }
+
             var message = new SlackMessage
             {
-                text = specificDay
+                text = $"Meny for {specificDay}",
+                attachments = CreateSlackAttachment(meals),
             };
 
-            message.attachments.AddRange(CreateSlackAttachment(menu[specificDay]));
 
             return message;
         }
 
-        private static IEnumerable<SlackAttachment> CreateSlackAttachment(IEnumerable<string> meals)
+        private static List<SlackAttachment> CreateSlackAttachment(IEnumerable<string> meals)
         {
             return meals.Select(meal => new SlackAttachment
             {
                 text = meal
-            });
+            })
+            .ToList();
         }
     }
 }
