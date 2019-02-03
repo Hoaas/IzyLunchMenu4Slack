@@ -15,14 +15,14 @@ namespace Api.Controllers
             _menuService = menuService;
         }
 
-        [Route("/")]
+        [Route("kantine")]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
             return Ok(await CreateSlackMessage());
         }
 
-        [Route("slack")]
+        [Route("kantine/slack")]
         [HttpPost]
         public async Task<IActionResult> SlackDirectResponse([FromForm] SlackPost post)
         {
