@@ -31,7 +31,7 @@ namespace Api.Controllers
         {
             var message = await CreateSlackMessage();
 
-            if (post?.command == null || !post.command.Contains("announce"))
+            if (post?.text == null || !post.text.Contains("announce"))
             {
                 message.response_type = "ephemeral";
             }
