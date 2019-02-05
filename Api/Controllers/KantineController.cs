@@ -29,6 +29,21 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<IActionResult> SlackDirectResponse([FromForm] SlackPost post)
         {
+            if (post?.text != null)
+            {
+                if (post.text.Contains("help") || post.text.Contains("hjelp"))
+                {
+                    return Ok(new SlackMessage
+                    {
+                        text = "Kommandoer:\n" +
+                               "announce - Gir output til hele kanalen\n" +
+                               // "all - Viser menyen for hele uka\n" +
+                               "hjelp - Denne hjelpen\n"
+                    });
+                }
+            }
+            
+
             var message = await CreateSlackMessage();
 
             if (post?.text == null || !post.text.Contains("announce"))
