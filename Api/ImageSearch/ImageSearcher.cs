@@ -45,9 +45,9 @@ namespace Api.ImageSearch
             if (_cache.TryGetValue(cacheKey, out string cacheEntry)) return cacheEntry;
 
             var client = new ImageSearchClient(
-                new ApiKeyServiceClientCredentials(Environment.GetEnvironmentVariable("AzureCognitive:FaceApi", EnvironmentVariableTarget.Machine)/*_config.FaceApi*/))
+                new ApiKeyServiceClientCredentials(Environment.GetEnvironmentVariable("AzureCognitive:FaceApi", EnvironmentVariableTarget.User)/*_config.FaceApi*/))
             {
-                Endpoint = Environment.GetEnvironmentVariable("AzureCognitive:Endpoint", EnvironmentVariableTarget.Machine) // _config.Endpoint
+                Endpoint = Environment.GetEnvironmentVariable("AzureCognitive:Endpoint", EnvironmentVariableTarget.User) // _config.Endpoint
             };
 
             HttpOperationResponse<Images> results;
