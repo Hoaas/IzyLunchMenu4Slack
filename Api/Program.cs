@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.IO;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace Api
 {
@@ -12,6 +14,18 @@ namespace Api
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    var env = context.HostingEnvironment;
+
+                    config
+                        .AddJsonFile("appsettings.json", false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", false)
+                        .AddUserSecrets<Startup>()
+                        .AddEnvironmentVariables();
+
+                    var builtConfig = config.Build();
+                })
                 .UseStartup<Startup>();
     }
 }

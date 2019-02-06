@@ -30,7 +30,7 @@ namespace Api.ImageSearch
             {
                 var url = await Search(searchTerm);
 
-                if (string.IsNullOrWhiteSpace(url)) return url;
+                if (!string.IsNullOrWhiteSpace(url)) return url;
 
                 searchTerm = RemoveLastWord(searchTerm);
             }

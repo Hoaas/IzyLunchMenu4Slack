@@ -30,16 +30,16 @@ namespace Api.Controllers
             return Ok(await CreateSlackMessage(false));
         }
 
-        [Route("kantine/image")]
-        [HttpGet]
-        public async Task<IActionResult> Get(string meal)
-        {
-            var url = await _imageSearcher.SearchForMeal(meal);
+        //[Route("kantine/image")]
+        //[HttpGet]
+        //public async Task<IActionResult> Get(string meal)
+        //{
+        //    var url = await _imageSearcher.SearchForMeal(meal);
 
-            if (url == null) return NotFound("No image found :'(");
+        //    if (url == null) return NotFound("No image found :'(");
 
-            return Ok(url);
-        }
+        //    return Ok(url);
+        //}
 
         [Route("kantine/slack")]
         [HttpPost]
