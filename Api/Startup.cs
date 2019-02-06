@@ -15,12 +15,8 @@ namespace Api
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-
-            if (env.IsDevelopment())
-            {
-                builder.AddUserSecrets<Startup>();
-            }
+                .AddUserSecrets<Startup>(optional: true)
+                .AddEnvironmentVariables(prefix: "SLACK_");
 
             Configuration = builder.Build();
         }
