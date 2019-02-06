@@ -20,8 +20,16 @@ namespace Api
             var menu = await _menuFetcher.ReadMenu();
 
             var menuAsText = ReadMenuResponseAsText(menu);
-
             return ParseTextMenu(menuAsText);
+        }
+
+        public async Task<string> FetchEntireMenuAsText()
+        {
+            var menu = await _menuFetcher.ReadMenu();
+
+            var menuAsText = ReadMenuResponseAsText(menu);
+
+            return menuAsText;
         }
 
         private static string ReadMenuResponseAsText(WorkplaceResponse parseResponse)

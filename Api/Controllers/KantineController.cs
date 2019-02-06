@@ -22,31 +22,45 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok(await CreateSlackMessage());
+            return Ok(await CreateSlackMessage(false));
         }
 
         [Route("kantine/slack")]
         [HttpPost]
         public async Task<IActionResult> SlackDirectResponse([FromForm] SlackPost post)
         {
+            SlackMessage message = null;
             if (post?.text != null)
             {
-                if (post.text.Contains("help") || post.text.Contains("hjelp"))
+                if (post.IsCommand("help") || post.IsCommand("hjelp"))
                 {
-                    return Ok(new SlackMessage
+                    message = new SlackMessage
                     {
                         text = "Kommandoer:\n" +
                                "announce - Gir output til hele kanalen\n" +
-                               // "all - Viser menyen for hele uka\n" +
-                               "hjelp - Denne hjelpen\n"
-                    });
+                               "all - Viser menyen for hele uka\n" +
+                               "help - Denne hjelpen\n"
+                    };
+                }
+                else if (post.IsCommand("all") || post.IsCommand("alt"))
+                {
+                    message = await CreateSlackMessage(allInOneNastyBlob: false);
                 }
             }
-            
+            else
+            {
+                message = await CreateSlackMessage(allInOneNastyBlob: true);
+            }
 
-            var message = await CreateSlackMessage();
+            if (message == null)
+            {
+                message = new SlackMessage
+                {
+                    text = "Woops. Noe gikk fryktelig galt."
+                };
+            }
 
-            if (post?.text == null || !post.text.Contains("announce"))
+            if (!post.IsCommand("announce"))
             {
                 message.response_type = "ephemeral";
             }
@@ -54,15 +68,25 @@ namespace Api.Controllers
             return Ok(message);
         }
 
-        private async Task<SlackMessage> CreateSlackMessage()
+        private async Task<SlackMessage> CreateSlackMessage(bool allInOneNastyBlob)
         {
+            if (allInOneNastyBlob)
+            {
+                var allMenu = await _menuService.FetchEntireMenuAsText();
+                return new SlackMessage { text = allMenu };
+            }
 
             var menu = await _menuService.FetchMenu();
+            return CreateMessageForSpesificDay(menu);
+        }
 
-            var specificDay = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
+        private static SlackMessage CreateMessageForSpesificDay(Dictionary<string, List<string>> menu)
+        {
+            var today = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
+
+            var specificDay = today;
 
             var tries = 0;
-
             List<string> meals;
             while (!menu.TryGetValue(CultureInfo.InvariantCulture.TextInfo.ToTitleCase(specificDay), out meals))
             {
@@ -73,7 +97,7 @@ namespace Api.Controllers
 
                 return new SlackMessage
                 {
-                    text = "Ingen måltider funnet :("
+                    text = $"Finner ikke meny for {today} (eller andre dager for den saksskyld)"
                 };
             }
 
@@ -82,8 +106,6 @@ namespace Api.Controllers
                 text = $"Meny for {specificDay}",
                 attachments = CreateSlackAttachment(meals),
             };
-
-
             return message;
         }
 
