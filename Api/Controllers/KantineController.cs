@@ -30,16 +30,16 @@ namespace Api.Controllers
             return Ok(await CreateSlackMessage(false));
         }
 
-        //[Route("kantine/image")]
-        //[HttpGet]
-        //public async Task<IActionResult> Get(string meal)
-        //{
-        //    var url = await _imageSearcher.SearchForMeal(meal);
+        [Route("kantine/image")]
+        [HttpGet]
+        public async Task<IActionResult> Get(string meal)
+        {
+            var url = await _imageSearcher.SearchForMeal(meal);
 
-        //    if (url == null) return NotFound("No image found :'(");
+            if (url == null) return NotFound("No image found :'(");
 
-        //    return Ok(url);
-        //}
+            return Ok(url);
+        }
 
         [Route("kantine/slack")]
         [HttpPost]
@@ -90,12 +90,26 @@ namespace Api.Controllers
         {
             if (allInOneNastyBlob)
             {
-                var allMenu = await _menuService.FetchEntireMenuAsText();
-                return new SlackMessage { text = allMenu };
+                try
+                {
+                    var allMenu = await _menuService.FetchEntireMenuAsText();
+                    return new SlackMessage { text = allMenu };
+                }
+                catch (WorkplaceNotWorkingException)
+                {
+                    return new SlackMessage { text = "https://workplace.izy.as/ er nede?" };
+                }
             }
+            try
+            {
+                var menu = await _menuService.FetchMenu();
+                return await CreateMessageForSpesificDay(menu);
+            }
+            catch (WorkplaceNotWorkingException)
+            {
+                return new SlackMessage { text = "https://workplace.izy.as/ er nede?" };
 
-            var menu = await _menuService.FetchMenu();
-            return await CreateMessageForSpesificDay(menu);
+            }
         }
 
         private async Task<SlackMessage> CreateMessageForSpesificDay(Dictionary<string, List<string>> menu)
@@ -133,7 +147,7 @@ namespace Api.Controllers
             var attachments = new List<SlackAttachment>();
             foreach (var meal in meals)
             {
-                var att = new SlackAttachment {text = meal};
+                var att = new SlackAttachment { text = meal };
                 if (meal.StartsWith("Varmrett"))
                 {
                     var hotdish = meal.Replace("Varmrett", string.Empty).Replace(":", string.Empty).Trim();

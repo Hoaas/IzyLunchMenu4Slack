@@ -26,9 +26,15 @@ namespace Api
             if (_cache.TryGetValue(MenuCacheKey, out WorkplaceResponse cacheEntry)) return cacheEntry;
 
             var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync(MenuUrl);
-
-            cacheEntry = await response.Content.ReadAsAsync<WorkplaceResponse>();
+            try
+            {
+                var response = await client.GetAsync(MenuUrl);
+                cacheEntry = await response.Content.ReadAsAsync<WorkplaceResponse>();
+            }
+            catch (Exception)
+            {
+                throw new WorkplaceNotWorkingException();
+            }
 
             _cache.Set(MenuCacheKey, cacheEntry, DateTime.Now.AddMinutes(15));
 
