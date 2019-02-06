@@ -21,7 +21,7 @@ namespace Api
                     config
                         .AddJsonFile("appsettings.json", false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", false)
-                        .AddUserSecrets<Startup>()
+                        .AddUserSecrets<Startup>(false)
                         .AddEnvironmentVariables();
 
                     var builtConfig = config.Build();
