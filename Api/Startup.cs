@@ -1,4 +1,5 @@
-﻿using Api.ImageSearch;
+﻿using Api.Config;
+using Api.ImageSearch;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;

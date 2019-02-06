@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Api.Config;
 using Microsoft.Azure.CognitiveServices.Search.ImageSearch;
 using Microsoft.Azure.CognitiveServices.Search.ImageSearch.Models;
 using Microsoft.Extensions.Caching.Memory;
