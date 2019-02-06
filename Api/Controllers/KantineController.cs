@@ -62,12 +62,12 @@ namespace Api.Controllers
                 }
                 else if (post.IsCommand("all") || post.IsCommand("alt"))
                 {
-                    message = await CreateSlackMessage(allInOneNastyBlob: false);
+                    message = await CreateSlackMessage(allInOneNastyBlob: true);
                 }
             }
             else
             {
-                message = await CreateSlackMessage(allInOneNastyBlob: true);
+                message = await CreateSlackMessage(allInOneNastyBlob: false);
             }
 
             if (message == null)
