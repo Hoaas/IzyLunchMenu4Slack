@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
+using Api.ImageSearch;
 using Api.Models.Slack;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,9 +13,14 @@ namespace Api.Controllers
     {
         private readonly IHelsedirMenuService _menuService;
 
-        public KantineController(IHelsedirMenuService menuService)
+        private readonly IImageSearcher _imageSearcher;
+
+        public KantineController(
+            IHelsedirMenuService menuService,
+            IImageSearcher imageSearcher)
         {
             _menuService = menuService;
+            _imageSearcher = imageSearcher;
         }
 
         [Route("kantine")]
@@ -24,6 +29,17 @@ namespace Api.Controllers
         {
             return Ok(await CreateSlackMessage(false));
         }
+
+        //[Route("kantine/image")]
+        //[HttpGet]
+        //public async Task<IActionResult> Get(string meal)
+        //{
+        //    var url = await _imageSearcher.SearchForMeal(meal);
+
+        //    if (url == null) return NotFound("No image found :'(");
+
+        //    return Ok(url);
+        //}
 
         [Route("kantine/slack")]
         [HttpPost]
@@ -39,7 +55,9 @@ namespace Api.Controllers
                         text = "Kommandoer:\n" +
                                "announce - Gir output til hele kanalen\n" +
                                "all - Viser menyen for hele uka\n" +
-                               "help - Denne hjelpen\n"
+                               "help - Denne hjelpen.\n" +
+                               "\n" +
+                               "https://github.com/Hoaas/Vitaminveien4Menu4Slack"
                     };
                 }
                 else if (post.IsCommand("all") || post.IsCommand("alt"))
@@ -77,10 +95,10 @@ namespace Api.Controllers
             }
 
             var menu = await _menuService.FetchMenu();
-            return CreateMessageForSpesificDay(menu);
+            return await CreateMessageForSpesificDay(menu);
         }
 
-        private static SlackMessage CreateMessageForSpesificDay(Dictionary<string, List<string>> menu)
+        private async Task<SlackMessage> CreateMessageForSpesificDay(Dictionary<string, List<string>> menu)
         {
             var today = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
 
@@ -104,18 +122,30 @@ namespace Api.Controllers
             var message = new SlackMessage
             {
                 text = $"Meny for {specificDay}",
-                attachments = CreateSlackAttachment(meals),
+                attachments = await CreateSlackAttachment(meals),
             };
+
             return message;
         }
 
-        private static List<SlackAttachment> CreateSlackAttachment(IEnumerable<string> meals)
+        private async Task<List<SlackAttachment>> CreateSlackAttachment(IEnumerable<string> meals)
         {
-            return meals.Select(meal => new SlackAttachment
+            var attachments = new List<SlackAttachment>();
+            foreach (var meal in meals)
             {
-                text = meal
-            })
-            .ToList();
+                var att = new SlackAttachment {text = meal};
+                if (meal.StartsWith("Varmrett"))
+                {
+                    var hotdish = meal.Replace("Varmrett", string.Empty).Replace(":", string.Empty).Trim();
+                    var url = await _imageSearcher.SearchForMeal(hotdish);
+                    if (url != null)
+                    {
+                        att.image_url = url;
+                    }
+                }
+                attachments.Add(att);
+            }
+            return attachments;
         }
     }
 }

@@ -1,0 +1,63 @@
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Azure.CognitiveServices.Search.ImageSearch;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+
+namespace Api.ImageSearch
+{
+    public class ImageSearcher : IImageSearcher
+    {
+        private readonly AzureCognitiveConfig _config;
+        private readonly IMemoryCache _cache;
+
+        public ImageSearcher(
+            IOptions<AzureCognitiveConfig> azureCognitiveOptions,
+            IMemoryCache memoryCachecache)
+        {
+            _cache = memoryCachecache;
+            _config = azureCognitiveOptions.Value;
+        }
+
+        public async Task<string> SearchForMeal(string meal)
+        {
+            var searchTerm = meal;
+
+            while (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var url = await Search(searchTerm);
+
+                if (url != null) return url;
+
+                searchTerm = RemoveLastWord(searchTerm);
+            }
+
+            return null;
+        }
+
+        private async Task<string> Search(string searchTerm)
+        {
+            var cacheKey = $"search-{searchTerm}";
+            if (_cache.TryGetValue(cacheKey, out string cacheEntry)) return cacheEntry;
+
+            var client = new ImageSearchClient(new ApiKeyServiceClientCredentials(_config.FaceApi))
+                {
+                    Endpoint = _config.Endpoint
+            };
+
+            var results = await client.Images.SearchWithHttpMessagesAsync(searchTerm, safeSearch: "Moderate");
+
+            cacheEntry = results?.Body?.Value?.FirstOrDefault()?.ContentUrl;
+
+            _cache.Set(cacheKey, cacheEntry, DateTime.Now.AddDays(1));
+
+            return cacheEntry;
+        }
+
+        private static string RemoveLastWord(string searchTerm)
+        {
+            return searchTerm.Substring(0, searchTerm.LastIndexOf(' ')).Trim();
+        }
+    }
+}

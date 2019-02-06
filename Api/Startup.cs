@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Api.ImageSearch;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -18,10 +19,15 @@ namespace Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<AzureCognitiveConfig>(opt => Configuration.GetSection("AzureCognitive").Bind(opt));
+
+            services.AddMemoryCache();
+
             services.AddHttpClient();
 
             services.AddTransient<IHelsedirMenuFetcher, HelsedirMenuFetcher>();
             services.AddTransient<IHelsedirMenuService, HelsedirMenuService>();
+            services.AddTransient<IImageSearcher, ImageSearcher>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
@@ -37,7 +43,7 @@ namespace Api
             {
                 //app.UseHsts();
             }
-
+            
             //app.UseHttpsRedirection();
             app.UseMvc();
         }

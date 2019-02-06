@@ -2,35 +2,37 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Api.Models.Workplace;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Api
 {
     public class HelsedirMenuFetcher : IHelsedirMenuFetcher
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IMemoryCache _cache;
         private const string MenuUrl = "https://workplace.izy.as/api/menu-items/featured";
+        private const string MenuCacheKey = "MenuCacheKey";
 
-        private WorkplaceResponse _responseCache;
-        private DateTime _cacheTime = DateTime.MinValue;
-
-        public HelsedirMenuFetcher(IHttpClientFactory httpClientFactory)
+        public HelsedirMenuFetcher(
+            IHttpClientFactory httpClientFactory,
+            IMemoryCache cache)
         {
             _httpClientFactory = httpClientFactory;
+            _cache = cache;
         }
 
         public async Task<WorkplaceResponse> ReadMenu()
         {
-            if (_cacheTime.AddMinutes(15) > DateTime.UtcNow) return _responseCache;
+            if (_cache.TryGetValue(MenuCacheKey, out WorkplaceResponse cacheEntry)) return cacheEntry;
 
             var client = _httpClientFactory.CreateClient();
             var response = await client.GetAsync(MenuUrl);
 
-            var parseResponse = await response.Content.ReadAsAsync<WorkplaceResponse>();
+            cacheEntry = await response.Content.ReadAsAsync<WorkplaceResponse>();
 
-            _responseCache = parseResponse;
-            _cacheTime = DateTime.UtcNow;
+            _cache.Set(MenuCacheKey, cacheEntry, DateTime.Now.AddMinutes(15));
 
-            return _responseCache;
+            return cacheEntry;
 
         }
     }

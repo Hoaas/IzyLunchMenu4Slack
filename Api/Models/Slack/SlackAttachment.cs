@@ -13,7 +13,7 @@
         //[JsonProperty(PropertyName = "text")]
         public string text { get; set; }
         //public SlackAttachmentField fields { get; set; }
-        //public string image_url { get; set; }
+        public string image_url { get; set; }
         public string thumb_url { get; set; }
     }
 
