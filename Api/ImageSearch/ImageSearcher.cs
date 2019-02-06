@@ -44,10 +44,9 @@ namespace Api.ImageSearch
             var cacheKey = $"search-{searchTerm}";
             if (_cache.TryGetValue(cacheKey, out string cacheEntry)) return cacheEntry;
 
-            var client = new ImageSearchClient(
-                new ApiKeyServiceClientCredentials(Environment.GetEnvironmentVariable("FaceApiKey")/*_config.FaceApi*/))
+            var client = new ImageSearchClient(new ApiKeyServiceClientCredentials(_config.FaceApi))
             {
-                Endpoint = Environment.GetEnvironmentVariable("FaceApiEndpoint") // _config.Endpoint
+                Endpoint = _config.Endpoint
             };
 
             HttpOperationResponse<Images> results;
