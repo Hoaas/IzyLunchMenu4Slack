@@ -151,10 +151,13 @@ namespace Api.Controllers
                 if (meal.StartsWith("Varmrett"))
                 {
                     var hotdish = meal.Replace("Varmrett", string.Empty).Replace(":", string.Empty).Trim();
-                    var url = await _imageSearcher.SearchForMeal(hotdish);
-                    if (url != null)
+                    if (!string.IsNullOrWhiteSpace(hotdish))
                     {
-                        att.image_url = url;
+                        var url = await _imageSearcher.SearchForMeal(hotdish);
+                        if (url != null)
+                        {
+                            att.image_url = url;
+                        }
                     }
                 }
                 attachments.Add(att);

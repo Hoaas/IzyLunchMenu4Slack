@@ -66,7 +66,8 @@ namespace Api.ImageSearch
 
         private static string RemoveLastWord(string searchTerm)
         {
-            return searchTerm.Substring(0, searchTerm.LastIndexOf(' ')).Trim();
+            var index = searchTerm.LastIndexOf(' ');
+            return index == -1 ? null : searchTerm.Substring(0, index).Trim();
         }
     }
 }
