@@ -2,8 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Search.ImageSearch;
+using Microsoft.Azure.CognitiveServices.Search.ImageSearch.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.Rest;
 
 namespace Api.ImageSearch
 {
@@ -28,7 +30,7 @@ namespace Api.ImageSearch
             {
                 var url = await Search(searchTerm);
 
-                if (url != null) return url;
+                if (string.IsNullOrWhiteSpace(url)) return url;
 
                 searchTerm = RemoveLastWord(searchTerm);
             }
@@ -46,8 +48,15 @@ namespace Api.ImageSearch
                     Endpoint = _config.Endpoint
             };
 
-            var results = await client.Images.SearchWithHttpMessagesAsync(searchTerm, safeSearch: "Moderate");
-
+            HttpOperationResponse<Images> results;
+            try
+            {
+                results = await client.Images.SearchWithHttpMessagesAsync(searchTerm, safeSearch: "Moderate");
+            }
+            catch (Exception)
+            {
+                return null;
+            }
             cacheEntry = results?.Body?.Value?.FirstOrDefault()?.ContentUrl;
 
             _cache.Set(cacheKey, cacheEntry, DateTime.Now.AddDays(1));
