@@ -5,6 +5,7 @@ using Api.Config;
 using Microsoft.Azure.CognitiveServices.Search.ImageSearch;
 using Microsoft.Azure.CognitiveServices.Search.ImageSearch.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Rest;
 
@@ -14,12 +15,17 @@ namespace Api.ImageSearch
     {
         private readonly AzureCognitiveConfig _config;
         private readonly IMemoryCache _cache;
+        private readonly ILogger<ImageSearcher> _logger;
+
+
 
         public ImageSearcher(
             IOptions<AzureCognitiveConfig> azureCognitiveOptions,
-            IMemoryCache memoryCachecache)
+            IMemoryCache memoryCachecache,
+            ILoggerFactory loggerFactory)
         {
             _cache = memoryCachecache;
+            _logger = loggerFactory.CreateLogger<ImageSearcher>();
             _config = azureCognitiveOptions.Value;
         }
 
@@ -52,10 +58,12 @@ namespace Api.ImageSearch
             HttpOperationResponse<Images> results;
             try
             {
+                _logger.LogInformation($"Image search for '{searchTerm}'.");
                 results = await client.Images.SearchWithHttpMessagesAsync(searchTerm, safeSearch: "Moderate");
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogCritical(e, "Image search failed.");
                 return null;
             }
             cacheEntry = results?.Body?.Value?.FirstOrDefault()?.ContentUrl;

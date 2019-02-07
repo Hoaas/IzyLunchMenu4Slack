@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Api.Models.Workplace;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace Api
 {
@@ -10,15 +11,19 @@ namespace Api
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMemoryCache _cache;
+        private readonly ILogger<HelsedirMenuFetcher> _logger;
+
         private const string MenuUrl = "https://workplace.izy.as/api/menu-items/featured";
         private const string MenuCacheKey = "MenuCacheKey";
 
         public HelsedirMenuFetcher(
             IHttpClientFactory httpClientFactory,
-            IMemoryCache cache)
+            IMemoryCache cache,
+            ILoggerFactory loggerFactory)
         {
             _httpClientFactory = httpClientFactory;
             _cache = cache;
+            _logger = loggerFactory.CreateLogger<HelsedirMenuFetcher>();
         }
 
         public async Task<WorkplaceResponse> ReadMenu()
@@ -28,6 +33,7 @@ namespace Api
             var client = _httpClientFactory.CreateClient();
             try
             {
+                _logger.LogInformation("Attempting to fetch menu.");
                 var response = await client.GetAsync(MenuUrl);
                 cacheEntry = await response.Content.ReadAsAsync<WorkplaceResponse>();
             }
