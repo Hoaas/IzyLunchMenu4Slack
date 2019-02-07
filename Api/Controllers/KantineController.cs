@@ -65,17 +65,10 @@ namespace Api.Controllers
                     message = await CreateSlackMessage(allInOneNastyBlob: true);
                 }
             }
-            else
-            {
-                message = await CreateSlackMessage(allInOneNastyBlob: false);
-            }
 
             if (message == null)
             {
-                message = new SlackMessage
-                {
-                    text = "Woops. Noe gikk fryktelig galt."
-                };
+                message = await CreateSlackMessage(allInOneNastyBlob: false);
             }
 
             if (!post.IsCommand("announce"))
