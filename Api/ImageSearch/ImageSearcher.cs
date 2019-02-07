@@ -27,8 +27,6 @@ namespace Api.ImageSearch
             _cache = memoryCachecache;
             _logger = loggerFactory.CreateLogger<ImageSearcher>();
             _config = azureCognitiveOptions.Value;
-
-            _logger.LogWarning($"Config values: '{_config.FaceApi}' & '{_config.Endpoint}'.");
         }
 
         public async Task<string> SearchForMeal(string meal)
