@@ -1,7 +1,7 @@
-FROM microsoft/dotnet:runtime AS base
+FROM microsoft/dotnet:latest AS base
 WORKDIR /app
 
-FROM microsoft/dotnet:sdk AS build
+FROM microsoft/dotnet:2.2-sdk AS build
 WORKDIR /src
 COPY [".", "Api/"]
 RUN dotnet restore "Api/Api.csproj"
