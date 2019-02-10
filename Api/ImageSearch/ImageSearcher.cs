@@ -33,6 +33,12 @@ namespace Api.ImageSearch
         {
             var searchTerm = meal;
 
+            var mainMeal = meal.Split("med", 2, StringSplitOptions.RemoveEmptyEntries);
+            if (mainMeal.Length == 2)
+            {
+                searchTerm = mainMeal.First();
+            }
+
             while (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 var url = await Search(searchTerm);
