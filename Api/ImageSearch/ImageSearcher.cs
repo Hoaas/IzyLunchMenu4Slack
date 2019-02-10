@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Api.Config;
@@ -16,7 +17,7 @@ namespace Api.ImageSearch
         private readonly AzureCognitiveConfig _config;
         private readonly IMemoryCache _cache;
         private readonly ILogger<ImageSearcher> _logger;
-
+        private readonly Random _random = new Random();
 
 
         public ImageSearcher(
@@ -41,9 +42,8 @@ namespace Api.ImageSearch
 
             while (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var url = await Search(searchTerm);
-
-                if (!string.IsNullOrWhiteSpace(url)) return url;
+                var urls = await Search(searchTerm);
+                if (urls.Any()) return PickRandom(urls);
 
                 searchTerm = RemoveLastWord(searchTerm);
             }
@@ -51,10 +51,18 @@ namespace Api.ImageSearch
             return null;
         }
 
-        private async Task<string> Search(string searchTerm)
+        private string PickRandom(IReadOnlyList<string> strings)
+        {
+            var hits = strings.Count;
+            {
+                return strings[_random.Next(0, hits)];
+            }
+        }
+
+        private async Task<List<string>> Search(string searchTerm)
         {
             var cacheKey = $"search-{searchTerm}";
-            if (_cache.TryGetValue(cacheKey, out string cacheEntry)) return cacheEntry;
+            if (_cache.TryGetValue(cacheKey, out List<string> cacheEntry)) return cacheEntry;
 
             var client = new ImageSearchClient(new ApiKeyServiceClientCredentials(_config.FaceApi))
             {
@@ -65,14 +73,23 @@ namespace Api.ImageSearch
             try
             {
                 _logger.LogInformation($"Image search for '{searchTerm}'.");
-                results = await client.Images.SearchWithHttpMessagesAsync(searchTerm, safeSearch: "Moderate");
+                results = await client.Images.SearchWithHttpMessagesAsync(
+                    searchTerm,
+                    safeSearch: "Moderate",
+                    countryCode: "no-no"
+                    );
             }
             catch (Exception e)
             {
                 _logger.LogCritical(e, "Image search failed.");
                 return null;
             }
-            cacheEntry = results?.Body?.Value?.FirstOrDefault()?.ContentUrl;
+
+            var searchResults = results?.Body?.Value;
+            if (searchResults != null)
+            {
+                cacheEntry = searchResults.Take(10).Select(x => x.ContentUrl).ToList();
+            }
 
             _cache.Set(cacheKey, cacheEntry, DateTime.Now.AddDays(1));
 
