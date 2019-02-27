@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Api.ImageSearch;
 using Api.Models.Slack;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace Api.Controllers
 {
@@ -12,15 +15,17 @@ namespace Api.Controllers
     public class KantineController : ControllerBase
     {
         private readonly IHelsedirMenuService _menuService;
-
         private readonly IImageSearcher _imageSearcher;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public KantineController(
             IHelsedirMenuService menuService,
-            IImageSearcher imageSearcher)
+            IImageSearcher imageSearcher,
+            IHttpClientFactory httpClientFactory)
         {
             _menuService = menuService;
             _imageSearcher = imageSearcher;
+            _httpClientFactory = httpClientFactory;
         }
 
         [Route("kantine")]
@@ -40,6 +45,27 @@ namespace Api.Controllers
 
         //    return Ok(url);
         //}
+
+        [Route("kantine/post-to-url")]
+        [HttpGet]
+        public async Task<IActionResult> PostToUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url) || !url.StartsWith("https://hooks.slack.com/services/"))
+            {
+                return BadRequest("Requires URL. And must start with https://hooks.slack.com/services/.");
+            }
+
+            var message = await CreateSlackMessage(allInOneNastyBlob: false);
+            message.response_type = "ephemeral";
+
+            var client = _httpClientFactory.CreateClient();
+
+            var json = JsonConvert.SerializeObject(message);
+
+            await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
+
+            return Ok();
+        }
 
         [Route("kantine/slack")]
         [HttpPost]
