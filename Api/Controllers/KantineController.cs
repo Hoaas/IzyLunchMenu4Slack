@@ -157,7 +157,7 @@ namespace Api.Controllers
                 };
             }
 
-            var blocks = CreateDefaultSectionText($"Meny for {specificDay}");
+            var blocks = CreateDefaultSectionText($"*Meny for {specificDay}*");
             blocks.AddRange(await CreateSlackAttachment(meals));
             return blocks;
         }
