@@ -1,6 +1,6 @@
 ﻿namespace Api.Models.Slack.Blocks
 {
-    public class SectionBlock
+    public class SectionBlock : ITypeBlock
     {
         public string Type => "section";
 

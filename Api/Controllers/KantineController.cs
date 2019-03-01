@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,7 +58,7 @@ namespace Api.Controllers
             }
 
             var message = await CreateSlackMessage(allInOneNastyBlob: false);
-            message.response_type = "ephemeral";
+            ////message.response_type = "ephemeral";
 
             var client = _httpClientFactory.CreateClient();
 
@@ -72,20 +73,18 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<IActionResult> SlackDirectResponse([FromForm] SlackPost post)
         {
-            SlackMessage message = null;
+            List<ITypeBlock> message = null;
             if (post?.text != null)
             {
                 if (post.IsCommand("help") || post.IsCommand("hjelp"))
                 {
-                    message = new SlackMessage
-                    {
-                        text = "Kommandoer:\n" +
-                               "announce - Gir output til hele kanalen\n" +
-                               "all - Viser menyen for hele uka\n" +
-                               "help - Denne hjelpen.\n" +
-                               "\n" +
-                               "https://github.com/Hoaas/Vitaminveien4Menu4Slack"
-                    };
+                    var text = $"*Kommandoer:\n" +
+                               $"*announce* - Gir output til hele kanalen\n" +
+                               $"*all* - Viser menyen for hele uka\n" +
+                               $"*help* - Denne hjelpen.\n" +
+                               $"\n" +
+                               $"https://github.com/Hoaas/Vitaminveien4Menu4Slack";
+                    message = CreateDefaultSectionText(text);
                 }
                 else if (post.IsCommand("all") || post.IsCommand("alt"))
                 {
@@ -98,26 +97,26 @@ namespace Api.Controllers
                 message = await CreateSlackMessage(allInOneNastyBlob: false);
             }
 
-            if (!post.IsCommand("announce"))
-            {
-                message.response_type = "ephemeral";
-            }
+            ////if (!post.IsCommand("announce"))
+            ////{
+            ////    message.response_type = "ephemeral";
+            ////}
 
             return Ok(message);
         }
 
-        private async Task<SlackMessage> CreateSlackMessage(bool allInOneNastyBlob)
+        private async Task<List<ITypeBlock>> CreateSlackMessage(bool allInOneNastyBlob)
         {
             if (allInOneNastyBlob)
             {
                 try
                 {
                     var allMenu = await _menuService.FetchEntireMenuAsText();
-                    return new SlackMessage { text = allMenu };
+                    return CreateDefaultSectionText(allMenu);
                 }
                 catch (WorkplaceNotWorkingException)
                 {
-                    return new SlackMessage { text = "https://workplace.izy.as/ er nede?" };
+                    return CreateDefaultSectionText("https://workplace.izy.as/ er nede?");
                 }
             }
             try
@@ -127,12 +126,11 @@ namespace Api.Controllers
             }
             catch (WorkplaceNotWorkingException)
             {
-                return new SlackMessage { text = "https://workplace.izy.as/ er nede?" };
-
+                return CreateDefaultSectionText("https://workplace.izy.as/ er nede?");
             }
         }
 
-        private async Task<SlackMessage> CreateMessageForSpesificDay(Dictionary<string, List<string>> menu)
+        private async Task<List<ITypeBlock>> CreateMessageForSpesificDay(Dictionary<string, List<string>> menu)
         {
             var today = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
 
@@ -147,24 +145,37 @@ namespace Api.Controllers
                 specificDay = DateTime.Now.AddDays(tries).ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
                 if (tries <= 7) continue;
 
-                return new SlackMessage
+                return new List<ITypeBlock>
                 {
-                    text = $"Finner ikke meny for {today} (eller andre dager for den saksskyld)"
+                    new SectionBlock
+                    {
+                        Text = new TextBlock
+                        {
+                            Text = $"Finner ikke meny for {today} (eller andre dager for den saksskyld)"
+                        }
+                    }
                 };
             }
 
-            var message = new SlackMessage
-            {
-                text = $"Meny for {specificDay}",
-                attachments = await CreateSlackAttachment(meals),
-            };
-
-            return message;
+            var blocks = CreateDefaultSectionText($"Meny for {specificDay}");
+            blocks.AddRange(await CreateSlackAttachment(meals));
+            return blocks;
         }
 
-        private async Task<List<SectionBlock>> CreateSlackAttachment(IEnumerable<string> meals)
+        private List<ITypeBlock> CreateDefaultSectionText(string text)
         {
-            var blocks = new List<SectionBlock>();
+            return new List<ITypeBlock>
+            {
+                new SectionBlock
+                {
+                    Text = new TextBlock {Text = text}
+                }
+            };
+        }
+
+        private async Task<IEnumerable<ITypeBlock>> CreateSlackAttachment(IEnumerable<string> meals)
+        {
+            var blocks = new List<ITypeBlock>();
             foreach (var meal in meals)
             {
                 var block = new SectionBlock
