@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Api.Models.Slack.Blocks;
 
 namespace Api.Models.Slack
 {
@@ -9,7 +10,7 @@ namespace Api.Models.Slack
         public string response_type { get; set; } = "in_channel";
         public string text { get; set; }
         //public List<Dictionary<string,string>> attachments { get; set; }
-        public List<SlackAttachment> attachments { get; set; }
+        public List<SectionBlock> attachments { get; set; }
         //public string username { get; set; }
         //public string icon_emoji { get; set; }
         //public string icon_url { get; set; }
