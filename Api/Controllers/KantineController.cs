@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Api.ImageSearch;
 using Api.Models.Slack;
+using Api.Models.Slack.Blocks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -161,27 +162,31 @@ namespace Api.Controllers
             return message;
         }
 
-        private async Task<List<SlackAttachment>> CreateSlackAttachment(IEnumerable<string> meals)
+        private async Task<List<SectionBlock>> CreateSlackAttachment(IEnumerable<string> meals)
         {
-            var attachments = new List<SlackAttachment>();
+            var blocks = new List<SectionBlock>();
             foreach (var meal in meals)
             {
-                var att = new SlackAttachment { text = meal };
-                if (meal.StartsWith("Varmrett"))
+                var block = new SectionBlock
                 {
-                    var hotdish = meal.Replace("Varmrett", string.Empty).Replace(":", string.Empty).Trim();
-                    if (!string.IsNullOrWhiteSpace(hotdish))
+                    Text = new TextBlock(),
+                    Accessory = new AccessoryBlock()
+                };
+                var dishName = meal.Split(":")[1].Trim();
+                if (!string.IsNullOrWhiteSpace(dishName))
+                {
+                    block.Text.Text = $"*{dishName}*";
+                    var url = await _imageSearcher.SearchForMeal(dishName);
+                    if (url != null)
                     {
-                        var url = await _imageSearcher.SearchForMeal(hotdish);
-                        if (url != null)
-                        {
-                            att.image_url = url;
-                        }
+                        block.Accessory.AltText = dishName;
+                        block.Accessory.ImageUrl = url;
                     }
                 }
-                attachments.Add(att);
+                blocks.Add(block);
             }
-            return attachments;
+
+            return blocks;
         }
     }
 }
