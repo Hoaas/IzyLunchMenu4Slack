@@ -34,7 +34,11 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok(await CreateSlackMessage(false));
+            var message = new SlackMessage
+            {
+                blocks = await CreateSlackMessage(false),
+            };
+            return Ok(message);
         }
 
         //[Route("kantine/image")]
@@ -57,8 +61,11 @@ namespace Api.Controllers
                 return BadRequest("Requires URL. And must start with https://hooks.slack.com/services/.");
             }
 
-            var message = await CreateSlackMessage(allInOneNastyBlob: false);
-            ////message.response_type = "ephemeral";
+            var message = new SlackMessage
+            {
+                blocks = await CreateSlackMessage(allInOneNastyBlob: false),
+                response_type = "ephemeral"
+            };
 
             var client = _httpClientFactory.CreateClient();
 
@@ -73,7 +80,7 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<IActionResult> SlackDirectResponse([FromForm] SlackPost post)
         {
-            List<ITypeBlock> message = null;
+            SlackMessage message = null;
             if (post?.text != null)
             {
                 if (post.IsCommand("help") || post.IsCommand("hjelp"))
@@ -84,23 +91,32 @@ namespace Api.Controllers
                                $"*help* - Denne hjelpen.\n" +
                                $"\n" +
                                $"https://github.com/Hoaas/Vitaminveien4Menu4Slack";
-                    message = CreateDefaultSectionText(text);
+                    message = new SlackMessage
+                    {
+                        blocks = CreateDefaultSectionText(text)
+                    };
                 }
                 else if (post.IsCommand("all") || post.IsCommand("alt"))
                 {
-                    message = await CreateSlackMessage(allInOneNastyBlob: true);
+                    message = new SlackMessage
+                    {
+                        blocks = await CreateSlackMessage(allInOneNastyBlob: true)
+                    };
                 }
             }
 
             if (message == null)
             {
-                message = await CreateSlackMessage(allInOneNastyBlob: false);
+                message = new SlackMessage
+                {
+                    blocks = await CreateSlackMessage(allInOneNastyBlob: false),
+                };
             }
 
-            ////if (!post.IsCommand("announce"))
-            ////{
-            ////    message.response_type = "ephemeral";
-            ////}
+            if (!post.IsCommand("announce"))
+            {
+                message.response_type = "ephemeral";
+            }
 
             return Ok(message);
         }
