@@ -138,7 +138,7 @@ namespace Api.Controllers
             try
             {
                 var menu = await _menuService.FetchMenu();
-                return await CreateMessageForSpesificDay(menu);
+                return await CreateMessageForSpecificDay(menu);
             }
             catch (WorkplaceNotWorkingException)
             {
@@ -146,7 +146,7 @@ namespace Api.Controllers
             }
         }
 
-        private async Task<List<ITypeBlock>> CreateMessageForSpesificDay(Dictionary<string, List<string>> menu)
+        private async Task<List<ITypeBlock>> CreateMessageForSpecificDay(Dictionary<string, List<string>> menu)
         {
             var today = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
 

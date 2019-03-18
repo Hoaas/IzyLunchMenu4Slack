@@ -66,7 +66,11 @@ namespace Api
                     currentDaysMenu.Add(l);
                 }
             }
-            dic.Add(currentDay, currentDaysMenu);
+
+            if (!string.IsNullOrWhiteSpace(currentDay))
+            {
+                dic.Add(currentDay, currentDaysMenu);
+            }
 
             return dic;
         }
@@ -75,11 +79,11 @@ namespace Api
         {
             line = line.ToLower();
 
-            return line == "mandag"
-                || line == "tirsdag"
-                || line == "onsdag"
-                || line == "torsdag"
-                || line == "fredag";
+            return line.StartsWith("mandag")
+                || line.StartsWith("tirsdag")
+                || line.StartsWith("onsdag")
+                || line.StartsWith("torsdag")
+                || line.StartsWith("fredag");
         }
     }
 }
