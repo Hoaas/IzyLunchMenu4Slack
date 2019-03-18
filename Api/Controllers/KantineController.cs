@@ -150,17 +150,21 @@ namespace Api.Controllers
         {
             var today = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
 
-            var specificDay = today;
 
-            var tries = 0;
-            List<string> meals;
-            while (!menu.TryGetValue(CultureInfo.InvariantCulture.TextInfo.ToTitleCase(specificDay), out meals))
+            List<string> meals = null;
+            var specificDay = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
+
+            foreach (var menuKey in menu.Keys)
             {
-                tries++;
+                if (menuKey.ToLower().Contains(specificDay.ToLower()))
+                {
+                    meals = menu[menuKey];
+                    break;
+                }
+            }
 
-                specificDay = DateTime.Now.AddDays(tries).ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
-                if (tries <= 7) continue;
-
+            if (meals == null)
+            {
                 return new List<ITypeBlock>
                 {
                     new SectionBlock
