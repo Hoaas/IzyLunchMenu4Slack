@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
 using Api.ImageSearch;
@@ -10,6 +11,7 @@ using Api.Models.Slack;
 using Api.Models.Slack.Blocks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Api.Controllers
 {
@@ -69,11 +71,14 @@ namespace Api.Controllers
 
             var client = _httpClientFactory.CreateClient();
 
-            var json = JsonConvert.SerializeObject(message);
+            var json = JsonConvert.SerializeObject(message, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
 
-            await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
+            var response = await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
 
-            return Ok();
+            return Ok(await response.Content.ReadAsStringAsync());
         }
 
         [Route("kantine/slack")]
