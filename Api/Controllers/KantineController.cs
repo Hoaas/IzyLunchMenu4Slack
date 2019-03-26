@@ -208,7 +208,12 @@ namespace Api.Controllers
                     Text = new TextBlock(),
                     Accessory = new AccessoryBlock()
                 };
-                var dishName = meal.Split(":")[1].Trim();
+
+                var dayAndMeal = meal.Split(":");
+
+                if (dayAndMeal.Length != 2) continue;
+
+                var dishName = dayAndMeal[1].Trim();
                 if (!string.IsNullOrWhiteSpace(dishName))
                 {
                     block.Text.Text = $"*{dishName}*";

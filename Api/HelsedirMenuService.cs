@@ -20,6 +20,9 @@ namespace Api
             var menu = await _menuFetcher.ReadMenu();
 
             var menuAsText = ReadMenuResponseAsText(menu);
+
+            menuAsText = menuAsText.Replace("¬", string.Empty);
+
             return ParseTextMenu(menuAsText);
         }
 
