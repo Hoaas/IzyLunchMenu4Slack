@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
 using Api.ImageSearch;
@@ -208,8 +206,9 @@ namespace Api.Controllers
                     Text = new TextBlock(),
                     Accessory = new AccessoryBlock()
                 };
-
-                var dayAndMeal = meal.Split(":");
+                var dayAndMeal = meal.Contains(":")
+                    ? meal.Split(":")
+                    : meal.Split(' ', 2);
 
                 if (dayAndMeal.Length != 2) continue;
 
