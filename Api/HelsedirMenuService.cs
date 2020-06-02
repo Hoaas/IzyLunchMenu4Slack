@@ -15,15 +15,24 @@ namespace Api
             _menuFetcher = menuFetcher;
         }
 
-        public async Task<Dictionary<string, List<string>>> FetchMenu()
+        public async Task<Dictionary<string, List<string>>> FetchWeeklyMenu()
         {
             var menu = await _menuFetcher.ReadMenu();
 
             var menuAsText = ReadMenuResponseAsText(menu);
 
-            menuAsText = menuAsText.Replace("¬", string.Empty);
+            return ParseWeeklyTextMenu(menuAsText);
+        }
 
-            return ParseTextMenu(menuAsText);
+        public async Task<IEnumerable<string>> FetchDailyMenu()
+        {
+            var menu = await _menuFetcher.ReadMenu();
+
+            var menuAsText = ReadMenuResponseAsText(menu);
+
+            var lines = ParseDailyTextMenu(menuAsText);
+
+            return lines;
         }
 
         public async Task<string> FetchEntireMenuAsText()
@@ -38,10 +47,23 @@ namespace Api
         private static string ReadMenuResponseAsText(WorkplaceResponse parseResponse)
         {
             var text = parseResponse.Body.Data?.First().Description;
+            text = text?.Replace("¬", string.Empty);
             return text;
         }
 
-        private static Dictionary<string, List<string>> ParseTextMenu(string text)
+        private IEnumerable<string> ParseDailyTextMenu(string text)
+        {
+            text = text
+                .Replace("<p>", string.Empty)
+                .Replace("</p>", string.Empty)
+                .Replace("<strong>", string.Empty)
+                .Replace("</strong>", " ");
+            var lines = text.Split("<br>", StringSplitOptions.RemoveEmptyEntries);
+
+            return lines.Select(l => l.Trim());
+        }
+
+        private static Dictionary<string, List<string>> ParseWeeklyTextMenu(string text)
         {
             var dic = new Dictionary<string, List<string>>();
             var lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);

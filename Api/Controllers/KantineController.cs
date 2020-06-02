@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -140,8 +141,17 @@ namespace Api.Controllers
             }
             try
             {
-                var menu = await _menuService.FetchMenu();
-                return await CreateMessageForSpecificDay(menu);
+                var menu = await _menuService.FetchWeeklyMenu();
+
+                if (menu.Count > 0)
+                {
+                    return await CreateMessageForSpecificDay(menu);
+                }
+
+                // Fallback 
+                var dailyMenu = await _menuService.FetchDailyMenu();
+
+                return await CreateMessageForDailyMenu(dailyMenu);
             }
             catch (WorkplaceNotWorkingException)
             {
@@ -149,22 +159,24 @@ namespace Api.Controllers
             }
         }
 
+        private async Task<List<ITypeBlock>> CreateMessageForDailyMenu(IEnumerable<string> dailyMenu)
+        {
+            var blocks = CreateDefaultSectionText("*Meny for i dag*");
+            blocks.AddRange(await CreateSlackAttachment(dailyMenu));
+            return blocks;
+        }
+
         private async Task<List<ITypeBlock>> CreateMessageForSpecificDay(Dictionary<string, List<string>> menu)
         {
             var today = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
 
 
-            List<string> meals = null;
             var specificDay = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
 
-            foreach (var menuKey in menu.Keys)
-            {
-                if (menuKey.ToLower().Contains(specificDay.ToLower()))
-                {
-                    meals = menu[menuKey];
-                    break;
-                }
-            }
+            var meals = (
+                from menuKey in menu.Keys
+                where menuKey.ToLower().Contains(specificDay.ToLower())
+                select menu[menuKey]).FirstOrDefault();
 
             if (meals == null)
             {
@@ -185,7 +197,7 @@ namespace Api.Controllers
             return blocks;
         }
 
-        private List<ITypeBlock> CreateDefaultSectionText(string text)
+        private static List<ITypeBlock> CreateDefaultSectionText(string text)
         {
             return new List<ITypeBlock>
             {
@@ -213,6 +225,12 @@ namespace Api.Controllers
                 if (dayAndMeal.Length != 2) continue;
 
                 var dishName = dayAndMeal[1].Trim();
+
+                if (string.IsNullOrWhiteSpace(dishName))
+                {
+                    continue;
+                }
+
                 if (!string.IsNullOrWhiteSpace(dishName))
                 {
                     block.Text.Text = $"*{dishName}*";
