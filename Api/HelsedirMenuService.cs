@@ -53,14 +53,35 @@ namespace Api
 
         private IEnumerable<string> ParseDailyTextMenu(string text)
         {
-            text = text
-                .Replace("<p>", string.Empty)
-                .Replace("</p>", string.Empty)
-                .Replace("<strong>", string.Empty)
-                .Replace("</strong>", " ");
+            text = FjernHtmlTags(text);
+
+            text = text.Replace("Allergener står oppført under lunsjen i personalrestauranten.", string.Empty);
+
             var lines = text.Split("<br>", StringSplitOptions.RemoveEmptyEntries);
 
             return lines.Select(l => l.Trim());
+        }
+
+        private static string FjernHtmlTags(string text)
+        {
+            //text = text
+            //    .Replace("<p>", string.Empty)
+            //    .Replace("</p>", string.Empty)
+            //    .Replace("<strong>", string.Empty)
+            //    .Replace("</strong>", " ");
+
+            // Generisk fjern alle tags
+            while (text.Contains("<"))
+            {
+                var startBracket = text.IndexOf("<", StringComparison.Ordinal);
+                var endBracket = text.IndexOf(">", startBracket, StringComparison.Ordinal);
+
+                if (endBracket == -1) break;
+
+                text = text.Remove(startBracket, (endBracket + 1) - startBracket);
+            }
+
+            return text;
         }
 
         private static Dictionary<string, List<string>> ParseWeeklyTextMenu(string text)
