@@ -17,20 +17,12 @@ namespace Api
 
         public async Task<Dictionary<string, List<string>>> FetchWeeklyMenu()
         {
-            var menu = await _menuFetcher.ReadMenu();
-
-            var menuAsText = ReadMenuResponseAsText(menu);
-
-            return ParseWeeklyTextMenu(menuAsText);
+            return ParseWeeklyTextMenu(await FetchEntireMenuAsText());
         }
 
         public async Task<IEnumerable<string>> FetchDailyMenu()
         {
-            var menu = await _menuFetcher.ReadMenu();
-
-            var menuAsText = ReadMenuResponseAsText(menu);
-
-            var lines = ParseDailyTextMenu(menuAsText);
+            var lines = ParseDailyTextMenu(await FetchEntireMenuAsText());
 
             return lines;
         }
@@ -44,19 +36,19 @@ namespace Api
             return menuAsText;
         }
 
+
         private static string ReadMenuResponseAsText(WorkplaceResponse parseResponse)
         {
             var text = parseResponse.Body.Data?.First().Description;
             text = text?.Replace("¬", string.Empty);
+
+            text = FjernHtmlTags(text);
+
             return text;
         }
 
-        private IEnumerable<string> ParseDailyTextMenu(string text)
+        private static IEnumerable<string> ParseDailyTextMenu(string text)
         {
-            text = FjernHtmlTags(text);
-
-            text = text.Replace("Allergener står oppført under lunsjen i personalrestauranten.", string.Empty);
-
             var lines = text.Split("<br>", StringSplitOptions.RemoveEmptyEntries);
 
             return lines.Select(l => l.Trim());
@@ -64,11 +56,17 @@ namespace Api
 
         private static string FjernHtmlTags(string text)
         {
-            //text = text
-            //    .Replace("<p>", string.Empty)
-            //    .Replace("</p>", string.Empty)
-            //    .Replace("<strong>", string.Empty)
-            //    .Replace("</strong>", " ");
+            text = text.Replace("Allergener står oppført under lunsjen i personalrestauranten.", string.Empty);
+
+            text = text.Replace("<p><strong>", '\n'.ToString());
+
+            text = text
+                .Replace("<p>", string.Empty)
+                .Replace("</p>", string.Empty)
+                .Replace("<strong>", string.Empty)
+                .Replace("</strong>", " ");
+
+            text = text.Replace(": ", '\n'.ToString());
 
             // Generisk fjern alle tags
             while (text.Contains("<"))

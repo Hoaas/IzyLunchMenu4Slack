@@ -218,13 +218,15 @@ namespace Api.Controllers
                     Text = new TextBlock(),
                     Accessory = new AccessoryBlock()
                 };
-                var dayAndMeal = meal.Contains(":")
-                    ? meal.Split(":")
-                    : meal.Split(' ', 2);
+                //var dayAndMeal = meal.Contains(":")
+                //    ? meal.Split(":")
+                //    : meal.Split(' ', 2);
 
-                if (dayAndMeal.Length != 2) continue;
+                //if (dayAndMeal.Length != 2) continue;
 
-                var dishName = dayAndMeal[1].Trim();
+                //var dishName = dayAndMeal[1].Trim();
+
+                var dishName = meal;
 
                 if (string.IsNullOrWhiteSpace(dishName))
                 {
