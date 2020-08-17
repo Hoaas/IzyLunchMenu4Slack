@@ -54,11 +54,13 @@ namespace Api
             return lines.Select(l => l.Trim());
         }
 
-        private static string FjernHtmlTags(string text)
+        private static string FjernHtmlTags(string orgtext)
         {
-            text = text.Replace("Allergener står oppført under lunsjen i personalrestauranten.", string.Empty);
+            var text = orgtext.Replace("Allergener står oppført under lunsjen i personalrestauranten.", string.Empty);
 
-            text = text.Replace("<p><strong>", '\n'.ToString());
+            text = text.Replace("<br>", Environment.NewLine);
+
+            text = text.Replace("<p><strong>", Environment.NewLine);
 
             text = text
                 .Replace("<p>", string.Empty)
@@ -66,7 +68,7 @@ namespace Api
                 .Replace("<strong>", string.Empty)
                 .Replace("</strong>", " ");
 
-            text = text.Replace(": ", '\n'.ToString());
+            text = text.Replace(":", Environment.NewLine);
 
             // Generisk fjern alle tags
             while (text.Contains("<"))
