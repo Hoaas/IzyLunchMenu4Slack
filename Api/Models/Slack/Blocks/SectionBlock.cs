@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Api.Models.Slack.Blocks
 {
@@ -6,9 +6,10 @@ namespace Api.Models.Slack.Blocks
     {
         public string Type => "section";
 
+        [JsonPropertyName("text")]
         public TextBlock Text { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("accessory")]
         public AccessoryBlock Accessory { get; set; }
     }
 }

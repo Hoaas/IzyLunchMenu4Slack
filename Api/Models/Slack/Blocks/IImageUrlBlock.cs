@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Api.Models.Slack.Blocks
 {
     public interface IImageUrlBlock
     {
-        [JsonProperty("image_url")]
+        [JsonPropertyName("image_url")]
         string ImageUrl { get; set; }
     }
 }

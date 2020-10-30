@@ -4,13 +4,12 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Api.ImageSearch;
 using Api.Models.Slack;
 using Api.Models.Slack.Blocks;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Api.Controllers
 {
@@ -39,6 +38,7 @@ namespace Api.Controllers
             {
                 blocks = await CreateSlackMessage(false),
             };
+
             return Ok(message);
         }
 
@@ -70,9 +70,9 @@ namespace Api.Controllers
 
             var client = _httpClientFactory.CreateClient();
 
-            var json = JsonConvert.SerializeObject(message, new JsonSerializerSettings
+            var json = JsonSerializer.Serialize(message, new JsonSerializerOptions
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
 
             var response = await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
@@ -89,12 +89,12 @@ namespace Api.Controllers
             {
                 if (post.IsCommand("help") || post.IsCommand("hjelp"))
                 {
-                    var text = $"*Kommandoer:\n" +
-                               $"*announce* - Gir output til hele kanalen\n" +
-                               $"*all* - Viser menyen for hele uka\n" +
-                               $"*help* - Denne hjelpen.\n" +
-                               $"\n" +
-                               $"https://github.com/Hoaas/Vitaminveien4Menu4Slack";
+                    var text = "*Kommandoer:\n" +
+                               "*announce* - Gir output til hele kanalen\n" +
+                               "*all* - Viser menyen for hele uka\n" +
+                               "*help* - Denne hjelpen.\n" +
+                               "\n" +
+                               "https://github.com/Hoaas/Vitaminveien4Menu4Slack";
                     message = new SlackMessage
                     {
                         blocks = CreateDefaultSectionText(text)
@@ -125,7 +125,7 @@ namespace Api.Controllers
             return Ok(message);
         }
 
-        private async Task<List<ITypeBlock>> CreateSlackMessage(bool allInOneNastyBlob)
+        private async Task<List<object>> CreateSlackMessage(bool allInOneNastyBlob)
         {
             if (allInOneNastyBlob)
             {
@@ -159,14 +159,14 @@ namespace Api.Controllers
             }
         }
 
-        private async Task<List<ITypeBlock>> CreateMessageForDailyMenu(IEnumerable<string> dailyMenu)
+        private async Task<List<object>> CreateMessageForDailyMenu(IEnumerable<string> dailyMenu)
         {
             var blocks = CreateDefaultSectionText("*Meny for i dag*");
             blocks.AddRange(await CreateSlackAttachment(dailyMenu));
             return blocks;
         }
 
-        private async Task<List<ITypeBlock>> CreateMessageForSpecificDay(Dictionary<string, List<string>> menu)
+        private async Task<List<object>> CreateMessageForSpecificDay(Dictionary<string, List<string>> menu)
         {
             var today = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
 
@@ -180,7 +180,7 @@ namespace Api.Controllers
 
             if (meals == null)
             {
-                return new List<ITypeBlock>
+                return new List<object>
                 {
                     new SectionBlock
                     {
@@ -197,9 +197,9 @@ namespace Api.Controllers
             return blocks;
         }
 
-        private static List<ITypeBlock> CreateDefaultSectionText(string text)
+        private static List<object> CreateDefaultSectionText(string text)
         {
-            return new List<ITypeBlock>
+            return new List<object>
             {
                 new SectionBlock
                 {
@@ -208,9 +208,9 @@ namespace Api.Controllers
             };
         }
 
-        private async Task<IEnumerable<ITypeBlock>> CreateSlackAttachment(IEnumerable<string> meals)
+        private async Task<IEnumerable<object>> CreateSlackAttachment(IEnumerable<string> meals)
         {
-            var blocks = new List<ITypeBlock>();
+            var blocks = new List<object>();
             foreach (var meal in meals)
             {
                 var block = new SectionBlock
