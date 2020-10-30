@@ -7,10 +7,10 @@ namespace Api.Models.Slack.Blocks
         [JsonPropertyName("type")]
         public string Type => "image";
         
-        [JsonPropertyName("imageurl")]
+        [JsonPropertyName("image_url")]
         public string ImageUrl { get; set; }
 
-        [JsonPropertyName("alttext")]
+        [JsonPropertyName("alt_text")]
         public string AltText { get; set; }
     }
 }
