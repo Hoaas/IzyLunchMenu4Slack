@@ -72,7 +72,8 @@ namespace Api.Controllers
 
             var json = JsonSerializer.Serialize(message, new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                IgnoreNullValues = true
             });
 
             var response = await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
