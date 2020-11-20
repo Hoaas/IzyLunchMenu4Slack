@@ -44,7 +44,7 @@ namespace Api
         private static Dictionary<string, List<string>> ParseTextMenu(string text)
         {
             var dic = new Dictionary<string, List<string>>();
-            var lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            var lines = text.Split(new [] { "\n", "<p>", "</p>", "<br>", "<br />"}, StringSplitOptions.RemoveEmptyEntries);
 
             string currentDay = null;
             List<string> currentDaysMenu = null;
