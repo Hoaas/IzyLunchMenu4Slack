@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Api.Models.Workplace;
 using Microsoft.Extensions.Caching.Memory;
@@ -35,7 +36,8 @@ namespace Api
             {
                 _logger.LogInformation("Attempting to fetch menu.");
                 var response = await client.GetAsync(MenuUrl);
-                cacheEntry = await response.Content.ReadAsAsync<WorkplaceResponse>();
+                var stream = await response.Content.ReadAsStreamAsync();
+                cacheEntry = await JsonSerializer.DeserializeAsync<WorkplaceResponse>(stream);
             }
             catch (Exception)
             {

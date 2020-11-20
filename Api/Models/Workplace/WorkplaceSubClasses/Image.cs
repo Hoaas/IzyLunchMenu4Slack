@@ -1,29 +1,29 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Api.Models.Workplace.WorkplaceSubClasses
 {
     public class Image
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public dynamic Type { get; set; }
 
-        [JsonProperty("title_key")]
+        [JsonPropertyName("title_key")]
         public dynamic TitleKey { get; set; }
 
-        [JsonProperty("url")]
+        [JsonPropertyName("url")]
         public Uri Url { get; set; }
 
-        [JsonProperty("path")]
+        [JsonPropertyName("path")]
         public string Path { get; set; }
 
-        [JsonProperty("image_url")]
+        [JsonPropertyName("image_url")]
         public Uri ImageUrl { get; set; }
     }
 }

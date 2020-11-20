@@ -10,7 +10,7 @@
         //public string author_icon { get; set; }
         public string title { get; set; }
         public string title_link { get; set; }
-        //[JsonProperty(PropertyName = "text")]
+        //[JsonPropertyName(PropertyName = "text")]
         public string text { get; set; }
         //public SlackAttachmentField fields { get; set; }
         public string image_url { get; set; }

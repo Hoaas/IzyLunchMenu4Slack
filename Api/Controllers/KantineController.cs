@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Api.ImageSearch;
 using Api.Models.Slack;
 using Api.Models.Slack.Blocks;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Api.Controllers
 {
@@ -40,6 +38,7 @@ namespace Api.Controllers
             {
                 blocks = await CreateSlackMessage(false),
             };
+
             return Ok(message);
         }
 
@@ -71,9 +70,10 @@ namespace Api.Controllers
 
             var client = _httpClientFactory.CreateClient();
 
-            var json = JsonConvert.SerializeObject(message, new JsonSerializerSettings
+            var json = JsonSerializer.Serialize(message, new JsonSerializerOptions
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                IgnoreNullValues = true
             });
 
             var response = await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
@@ -90,12 +90,12 @@ namespace Api.Controllers
             {
                 if (post.IsCommand("help") || post.IsCommand("hjelp"))
                 {
-                    var text = $"*Kommandoer:\n" +
-                               $"*announce* - Gir output til hele kanalen\n" +
-                               $"*all* - Viser menyen for hele uka\n" +
-                               $"*help* - Denne hjelpen.\n" +
-                               $"\n" +
-                               $"https://github.com/Hoaas/Vitaminveien4Menu4Slack";
+                    var text = "*Kommandoer:\n" +
+                               "*announce* - Gir output til hele kanalen\n" +
+                               "*all* - Viser menyen for hele uka\n" +
+                               "*help* - Denne hjelpen.\n" +
+                               "\n" +
+                               "https://github.com/Hoaas/Vitaminveien4Menu4Slack";
                     message = new SlackMessage
                     {
                         blocks = CreateDefaultSectionText(text)
@@ -126,7 +126,7 @@ namespace Api.Controllers
             return Ok(message);
         }
 
-        private async Task<List<ITypeBlock>> CreateSlackMessage(bool allInOneNastyBlob)
+        private async Task<List<object>> CreateSlackMessage(bool allInOneNastyBlob)
         {
             if (allInOneNastyBlob)
             {
@@ -142,8 +142,17 @@ namespace Api.Controllers
             }
             try
             {
-                var menu = await _menuService.FetchMenu();
-                return await CreateMessageForSpecificDay(menu);
+                var menu = await _menuService.FetchWeeklyMenu();
+
+                if (menu.Count > 0)
+                {
+                    return await CreateMessageForSpecificDay(menu);
+                }
+
+                // Fallback 
+                var dailyMenu = await _menuService.FetchDailyMenu();
+
+                return await CreateMessageForDailyMenu(dailyMenu);
             }
             catch (WorkplaceNotWorkingException)
             {
@@ -151,26 +160,28 @@ namespace Api.Controllers
             }
         }
 
-        private async Task<List<ITypeBlock>> CreateMessageForSpecificDay(Dictionary<string, List<string>> menu)
+        private async Task<List<object>> CreateMessageForDailyMenu(IEnumerable<string> dailyMenu)
+        {
+            var blocks = CreateDefaultSectionText("*Meny for i dag*");
+            blocks.AddRange(await CreateSlackAttachment(dailyMenu));
+            return blocks;
+        }
+
+        private async Task<List<object>> CreateMessageForSpecificDay(Dictionary<string, List<string>> menu)
         {
             var today = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
 
 
-            List<string> meals = null;
             var specificDay = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
 
-            foreach (var menuKey in menu.Keys)
-            {
-                if (menuKey.ToLower().Contains(specificDay.ToLower()))
-                {
-                    meals = menu[menuKey];
-                    break;
-                }
-            }
+            var meals = (
+                from menuKey in menu.Keys
+                where menuKey.ToLower().Contains(specificDay.ToLower())
+                select menu[menuKey]).FirstOrDefault();
 
             if (meals == null)
             {
-                return new List<ITypeBlock>
+                return new List<object>
                 {
                     new SectionBlock
                     {
@@ -187,9 +198,9 @@ namespace Api.Controllers
             return blocks;
         }
 
-        private List<ITypeBlock> CreateDefaultSectionText(string text)
+        private static List<object> CreateDefaultSectionText(string text)
         {
-            return new List<ITypeBlock>
+            return new List<object>
             {
                 new SectionBlock
                 {
@@ -198,9 +209,9 @@ namespace Api.Controllers
             };
         }
 
-        private async Task<IEnumerable<ITypeBlock>> CreateSlackAttachment(IEnumerable<string> meals)
+        private async Task<IEnumerable<object>> CreateSlackAttachment(IEnumerable<string> meals)
         {
-            var blocks = new List<ITypeBlock>();
+            var blocks = new List<object>();
             foreach (var meal in meals)
             {
                 var block = new SectionBlock
@@ -208,12 +219,21 @@ namespace Api.Controllers
                     Text = new TextBlock(),
                     Accessory = new AccessoryBlock()
                 };
+                //var dayAndMeal = meal.Contains(":")
+                //    ? meal.Split(":")
+                //    : meal.Split(' ', 2);
 
-                var dayAndMeal = meal.Split(":");
+                //if (dayAndMeal.Length != 2) continue;
 
-                if (dayAndMeal.Length != 2) continue;
+                //var dishName = dayAndMeal[1].Trim();
 
-                var dishName = dayAndMeal[1].Trim();
+                var dishName = meal;
+
+                if (string.IsNullOrWhiteSpace(dishName))
+                {
+                    continue;
+                }
+
                 if (!string.IsNullOrWhiteSpace(dishName))
                 {
                     block.Text.Text = $"*{dishName}*";

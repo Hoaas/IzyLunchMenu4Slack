@@ -15,15 +15,16 @@ namespace Api
             _menuFetcher = menuFetcher;
         }
 
-        public async Task<Dictionary<string, List<string>>> FetchMenu()
+        public async Task<Dictionary<string, List<string>>> FetchWeeklyMenu()
         {
-            var menu = await _menuFetcher.ReadMenu();
+            return ParseWeeklyTextMenu(await FetchEntireMenuAsText());
+        }
 
-            var menuAsText = ReadMenuResponseAsText(menu);
+        public async Task<IEnumerable<string>> FetchDailyMenu()
+        {
+            var lines = ParseDailyTextMenu(await FetchEntireMenuAsText());
 
-            menuAsText = menuAsText.Replace("¬", string.Empty);
-
-            return ParseTextMenu(menuAsText);
+            return lines;
         }
 
         public async Task<string> FetchEntireMenuAsText()
@@ -35,13 +36,58 @@ namespace Api
             return menuAsText;
         }
 
+
         private static string ReadMenuResponseAsText(WorkplaceResponse parseResponse)
         {
             var text = parseResponse.Body.Data?.First().Description;
+            text = text?.Replace("¬", string.Empty);
+
+            text = FjernHtmlTags(text);
+
             return text;
         }
 
-        private static Dictionary<string, List<string>> ParseTextMenu(string text)
+        private static IEnumerable<string> ParseDailyTextMenu(string text)
+        {
+            var lines = text.Split("<br>", StringSplitOptions.RemoveEmptyEntries);
+
+            return lines.Select(l => l.Trim());
+        }
+
+        private static string FjernHtmlTags(string orgtext)
+        {
+            var text = orgtext.Replace("Allergener står oppført under lunsjen i personalrestauranten.", string.Empty);
+
+            text = text.Replace("<br>", Environment.NewLine);
+
+            text = text.Replace("<p><strong>", Environment.NewLine);
+
+            text = text
+                .Replace("<p>", string.Empty)
+                .Replace("</p>", string.Empty)
+                .Replace("<strong>", string.Empty)
+                .Replace("</strong>", " ");
+
+            text = text.Replace("Varmrett:", Environment.NewLine);
+            text = text.Replace("Suppe:", Environment.NewLine);
+            text = text.Replace("Dessert:", Environment.NewLine);
+            text = text.Replace(":", Environment.NewLine);
+
+            // Generisk fjern alle tags
+            while (text.Contains("<"))
+            {
+                var startBracket = text.IndexOf("<", StringComparison.Ordinal);
+                var endBracket = text.IndexOf(">", startBracket, StringComparison.Ordinal);
+
+                if (endBracket == -1) break;
+
+                text = text.Remove(startBracket, (endBracket + 1) - startBracket);
+            }
+
+            return text;
+        }
+
+        private static Dictionary<string, List<string>> ParseWeeklyTextMenu(string text)
         {
             var dic = new Dictionary<string, List<string>>();
             var lines = text.Split(new [] { "\n", "<p>", "</p>", "<br>", "<br />"}, StringSplitOptions.RemoveEmptyEntries);

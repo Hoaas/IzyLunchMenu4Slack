@@ -1,14 +1,14 @@
-﻿using Api.Models.Workplace.WorkplaceSubClasses;
-using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
+using Api.Models.Workplace.WorkplaceSubClasses;
 
 namespace Api.Models.Workplace
 {
     public class WorkplaceResponse
     {
-        [JsonProperty("body")]
+        [JsonPropertyName("body")]
         public Body Body { get; set; }
 
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public Status Status { get; set; }
     }
 }

@@ -28,7 +28,7 @@ namespace ApiTest
             var parser = new HelsedirMenuService(_helsedirMenuFetcherMock);
 
             // Act
-            var menu = await parser.FetchMenu();
+            var menu = await parser.FetchWeeklyMenu();
 
             // Assert
             Assert.Equal(5, menu.Count);

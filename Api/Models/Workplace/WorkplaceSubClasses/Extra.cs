@@ -1,10 +1,10 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Api.Models.Workplace.WorkplaceSubClasses
 {
     public class Extra
     {
-        [JsonProperty("ingredients")]
+        [JsonPropertyName("ingredients")]
         public string Ingredients { get; set; }
     }
 }

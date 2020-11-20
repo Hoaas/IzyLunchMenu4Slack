@@ -1,81 +1,81 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Api.Models.Workplace.WorkplaceSubClasses
 {
     public class Datum
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonProperty("max")]
+        [JsonPropertyName("max")]
         public dynamic Max { get; set; }
 
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public long Status { get; set; }
 
-        [JsonProperty("price")]
+        [JsonPropertyName("price")]
         public dynamic Price { get; set; }
 
-        [JsonProperty("updated_by")]
+        [JsonPropertyName("updated_by")]
         public long UpdatedBy { get; set; }
 
-        [JsonProperty("created_by")]
+        [JsonPropertyName("created_by")]
         public long CreatedBy { get; set; }
 
-        [JsonProperty("deleted_by")]
+        [JsonPropertyName("deleted_by")]
         public dynamic DeletedBy { get; set; }
 
-        [JsonProperty("created_at")]
-        public DateTimeOffset CreatedAt { get; set; }
+        [JsonPropertyName("created_at")]
+        public string CreatedAt { get; set; }
 
-        [JsonProperty("updated_at")]
-        public DateTimeOffset UpdatedAt { get; set; }
+        [JsonPropertyName("updated_at")]
+        public string UpdatedAt { get; set; }
 
-        [JsonProperty("deleted_at")]
+        [JsonPropertyName("deleted_at")]
         public dynamic DeletedAt { get; set; }
 
-        [JsonProperty("extra")]
+        [JsonPropertyName("extra")]
         public Extra Extra { get; set; }
 
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public dynamic Type { get; set; }
 
-        [JsonProperty("resource_type")]
+        [JsonPropertyName("resource_type")]
         public string ResourceType { get; set; }
 
-        [JsonProperty("resource_id")]
+        [JsonPropertyName("resource_id")]
         public long ResourceId { get; set; }
 
-        [JsonProperty("building_id")]
+        [JsonPropertyName("building_id")]
         public long BuildingId { get; set; }
 
-        [JsonProperty("user_specific_price")]
+        [JsonPropertyName("user_specific_price")]
         public dynamic UserSpecificPrice { get; set; }
 
-        [JsonProperty("user_specific_vat")]
+        [JsonPropertyName("user_specific_vat")]
         public dynamic UserSpecificVat { get; set; }
 
-        [JsonProperty("canteen_id")]
+        [JsonPropertyName("canteen_id")]
         public long CanteenId { get; set; }
 
-        [JsonProperty("categories")]
+        [JsonPropertyName("categories")]
         public List<dynamic> Categories { get; set; }
 
-        [JsonProperty("food_allergen_labels")]
+        [JsonPropertyName("food_allergen_labels")]
         public List<dynamic> FoodAllergenLabels { get; set; }
 
-        [JsonProperty("vats")]
+        [JsonPropertyName("vats")]
         public List<dynamic> Vats { get; set; }
 
-        [JsonProperty("images")]
+        [JsonPropertyName("images")]
         public List<Image> Images { get; set; }
     }
 }

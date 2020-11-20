@@ -1,45 +1,45 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Api.Models.Workplace.WorkplaceSubClasses
 {
     public class Body
     {
-        [JsonProperty("current_page")]
+        [JsonPropertyName("current_page")]
         public long CurrentPage { get; set; }
 
-        [JsonProperty("data")]
+        [JsonPropertyName("data")]
         public List<Datum> Data { get; set; }
 
-        [JsonProperty("first_page_url")]
+        [JsonPropertyName("first_page_url")]
         public Uri FirstPageUrl { get; set; }
 
-        [JsonProperty("from")]
+        [JsonPropertyName("from")]
         public long From { get; set; }
 
-        [JsonProperty("last_page")]
+        [JsonPropertyName("last_page")]
         public long LastPage { get; set; }
 
-        [JsonProperty("last_page_url")]
+        [JsonPropertyName("last_page_url")]
         public Uri LastPageUrl { get; set; }
 
-        [JsonProperty("next_page_url")]
+        [JsonPropertyName("next_page_url")]
         public dynamic NextPageUrl { get; set; }
 
-        [JsonProperty("path")]
+        [JsonPropertyName("path")]
         public Uri Path { get; set; }
 
-        [JsonProperty("per_page")]
+        [JsonPropertyName("per_page")]
         public long PerPage { get; set; }
 
-        [JsonProperty("prev_page_url")]
+        [JsonPropertyName("prev_page_url")]
         public dynamic PrevPageUrl { get; set; }
 
-        [JsonProperty("to")]
+        [JsonPropertyName("to")]
         public long To { get; set; }
 
-        [JsonProperty("total")]
+        [JsonPropertyName("total")]
         public long Total { get; set; }
     }
 }

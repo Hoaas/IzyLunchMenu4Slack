@@ -1,20 +1,20 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Api.Models.Workplace.WorkplaceSubClasses
 {
     public class Status
     {
-        [JsonProperty("message")]
+        [JsonPropertyName("message")]
         public string Message { get; set; }
 
-        [JsonProperty("code")]
+        [JsonPropertyName("code")]
         public string Code { get; set; }
 
-        [JsonProperty("code_text")]
+        [JsonPropertyName("code_text")]
         public string CodeText { get; set; }
 
-        [JsonProperty("response_timestamp")]
-        public DateTimeOffset ResponseTimestamp { get; set; }
+        [JsonPropertyName("response_timestamp")]
+        public string ResponseTimestamp { get; set; }
     }
 }

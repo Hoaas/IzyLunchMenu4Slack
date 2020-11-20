@@ -2,16 +2,15 @@
 using Api.ImageSearch;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 
 namespace Api
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IHostEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -38,11 +37,14 @@ namespace Api
             services.AddTransient<IHelsedirMenuService, HelsedirMenuService>();
             services.AddTransient<IImageSearcher, ImageSearcher>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddRouting();
+
+            services.AddControllers()
+                .AddJsonOptions(o => o.JsonSerializerOptions.IgnoreNullValues = true);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -54,7 +56,13 @@ namespace Api
             }
             
             //app.UseHttpsRedirection();
-            app.UseMvc();
+
+            app.UseRouting();
+
+            app.UseEndpoints(o =>
+            {
+                o.MapControllers();
+            });
         }
     }
 }
