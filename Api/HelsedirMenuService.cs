@@ -70,6 +70,7 @@ namespace Api
 
             text = text.Replace("Varmrett:", Environment.NewLine);
             text = text.Replace("Suppe:", Environment.NewLine);
+            text = text.Replace("Salat:", Environment.NewLine);
             text = text.Replace("Dessert:", Environment.NewLine);
             text = text.Replace(":", Environment.NewLine);
 
