@@ -167,16 +167,44 @@ namespace Api.Controllers
             return blocks;
         }
 
+        /// <summary>
+        /// Oversetter fra engelsk navn på dag til norsk
+        /// </summary>
+        /// <remarks>
+        /// Workaround for workaround.
+        /// Docker image som benyttes er satt opp i Culture Invariant Mode
+        /// https://github.com/dotnet/dotnet-docker/issues/1110
+        ///
+        /// Dette imaget brukes igjen fordi det var sertifikat-issues med vanlig dotnet image januar 2021.
+        /// </remarks>
+        /// 
+        /// <param name="day"></param>
+        /// <returns></returns>
+        private string Norwegify(string day)
+        {
+            day = day.ToLower();
+
+            return day switch
+            {
+                "monday" => "mandag",
+                "tuesday" => "tuesday",
+                "wednesday" => "onsdag",
+                "thursday" => "torsdag",
+                "friday" => "fredag",
+                "saturday" => "lørdag",
+                "sunday" => "søndag",
+                _ => day
+            };
+        }
+
         private async Task<List<object>> CreateMessageForSpecificDay(Dictionary<string, List<string>> menu)
         {
             var today = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
-
-
-            var specificDay = DateTime.Now.ToString("dddd", CultureInfo.GetCultureInfo("nb-NO"));
+            today = Norwegify(today);
 
             var meals = (
                 from menuKey in menu.Keys
-                where menuKey.ToLower().Contains(specificDay.ToLower())
+                where menuKey.ToLower().Contains(today.ToLower())
                 select menu[menuKey]).FirstOrDefault();
 
             if (meals == null)
@@ -193,7 +221,7 @@ namespace Api.Controllers
                 };
             }
 
-            var blocks = CreateDefaultSectionText($"*Meny for {specificDay}*");
+            var blocks = CreateDefaultSectionText($"*Meny for {today}*");
             blocks.AddRange(await CreateSlackAttachment(meals));
             return blocks;
         }
