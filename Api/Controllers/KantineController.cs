@@ -182,12 +182,12 @@ namespace Api.Controllers
         /// <returns></returns>
         private string Norwegify(string day)
         {
-            day = day.ToLower();
+            day = day.ToLower().Trim();
 
             return day switch
             {
                 "monday" => "mandag",
-                "tuesday" => "tuesday",
+                "tuesday" => "tirsdag",
                 "wednesday" => "onsdag",
                 "thursday" => "torsdag",
                 "friday" => "fredag",
