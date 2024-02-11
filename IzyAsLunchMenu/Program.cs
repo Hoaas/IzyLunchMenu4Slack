@@ -40,7 +40,7 @@ app.MapGet("/kantine/slackwebhook", async (
     {
         var menu = await izyAsService.GetMenu();
 
-        var today = DateTime.Today.AddDays(-5).Date.ToString("yyyy-MM-dd");
+        var today = DateTime.Today.Date.ToString("yyyy-MM-dd");
         var todaysDishes = menu[today];
         
         if (todaysDishes.Count == 0)
