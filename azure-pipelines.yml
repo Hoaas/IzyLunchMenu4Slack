@@ -37,5 +37,5 @@ stages:
       - bash: 'docker rm -f $(ContainerName)'
         displayName: 'Remove old container'
 
-      - bash: 'docker run --restart unless-stopped --name $(ContainerName) -d  -p 5000:80 -e "BingSearchSubscriptionKey=$(BingSearchSubscriptionKey)" -e "OpenAiSubscriptionKey=$(OpenAiSubscriptionKey)" -e "IzyAsUsername=$(IzyAsUsername)" -e "IzyAsPassword=$(IzyAsPassword)" $(registry)/$(imageRepository):$(Build.BuildId)'
+      - bash: 'docker run --restart unless-stopped --name $(ContainerName) -d  -p 5000:8080 -e "BingSearchSubscriptionKey=$(BingSearchSubscriptionKey)" -e "OpenAiSubscriptionKey=$(OpenAiSubscriptionKey)" -e "IzyAsUsername=$(IzyAsUsername)" -e "IzyAsPassword=$(IzyAsPassword)" $(registry)/$(imageRepository):$(Build.BuildId)'
         displayName: 'Start new container'
