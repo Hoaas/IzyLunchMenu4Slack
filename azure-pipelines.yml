@@ -23,18 +23,18 @@ stages:
 - stage: Run
   displayName: Run new container
   jobs:
-    - job: Run
-      displayName: Run
-      pool:
-        name: $(AgentPool)
-      steps:
-        - task: Docker@2
-          displayName: Login to Docker registry
-          inputs:
-            command: 'login'
-            containerRegistry: $(dockerRegistryServiceConnection)
-        - task: Docker@2
-          displayName: Run new container from image
-          inputs:
-            command: 'start'
-            arguments: '--restart unless-stopped --name $(ContainerName) -d -p 5000:80 -e "BingSearchSubscriptionKey=$(BingSearchSubscriptionKey)" -e "OpenAiSubscriptionKey=$(OpenAiSubscriptionKey)" -e "IzyAsUsername=$(IzyAsUsername)" -e "IzyAsPassword=$(IzyAsPassword)" $(registry)/$(imageRepository):$(Build.BuildId)'
+  - job: Run
+    displayName: Run
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - task: Docker@2
+        displayName: Login to Docker registry
+        inputs:
+          command: 'login'
+          containerRegistry: $(dockerRegistryServiceConnection)
+      - task: Docker@2
+        displayName: Run new container from image
+        inputs:
+          command: 'start'
+          arguments: '--restart unless-stopped --name $(ContainerName) -d -p 5000:80 -e "BingSearchSubscriptionKey=$(BingSearchSubscriptionKey)" -e "OpenAiSubscriptionKey=$(OpenAiSubscriptionKey)" -e "IzyAsUsername=$(IzyAsUsername)" -e "IzyAsPassword=$(IzyAsPassword)" $(registry)/$(imageRepository):$(Build.BuildId)'
