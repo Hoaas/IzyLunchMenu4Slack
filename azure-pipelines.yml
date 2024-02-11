@@ -37,4 +37,5 @@ stages:
         displayName: Run new container from image
         inputs:
           command: 'start'
-          arguments: '--restart unless-stopped --name $(ContainerName) -d -p 5000:80 -e "BingSearchSubscriptionKey=$(BingSearchSubscriptionKey)" -e "OpenAiSubscriptionKey=$(OpenAiSubscriptionKey)" -e "IzyAsUsername=$(IzyAsUsername)" -e "IzyAsPassword=$(IzyAsPassword)" $(registry)/$(imageRepository):$(Build.BuildId)'
+          arguments: '--restart unless-stopped -d -p 5000:80 -e "BingSearchSubscriptionKey=$(BingSearchSubscriptionKey)" -e "OpenAiSubscriptionKey=$(OpenAiSubscriptionKey)" -e "IzyAsUsername=$(IzyAsUsername)" -e "IzyAsPassword=$(IzyAsPassword)" $(registry)/$(imageRepository):$(Build.BuildId)'
+          container: '$(ContainerName)'
