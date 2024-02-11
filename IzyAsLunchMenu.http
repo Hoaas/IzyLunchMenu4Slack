@@ -1,0 +1,6 @@
+@IzyAsLunchMenu_HostAddress = http://localhost:5035
+
+GET {{IzyAsLunchMenu_HostAddress}}/kantine/
+Accept: application/json
+
+###
