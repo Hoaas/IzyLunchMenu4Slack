@@ -21,20 +21,20 @@ stages:
         Dockerfile: '**/Dockerfile'
 
 - stage: Run
+  displayName: Run new container
   jobs:
-  - job: Delete
-    displayName: Stop and delete old container
-    pool: $(AgentPool)
-
-    steps:
-    - bash: 'docker rm -f $(ContainerName)'
-      displayName: 'Bash Script'
-      continueOnError: true
-
-  - job: 
-    displayName: Run new container from registry
-    pool: $(AgentPool)
-
-    steps:
-    - bash: 'docker run --restart unless-stopped --name $(ContainerName) -d  -p 5000:80 -e ''BingSearchSubscriptionKey=$(BingSearchSubscriptionKey)'' -e ''OpenAiSubscriptionKey=$(OpenAiSubscriptionKey)'' -e ''IzyAsUsername=$(IzyAsUsername)'' -e ''IzyAsPassword=$(IzyAsPassword)'' $(registry)/$(imageRepository)/$(ContainerName):$(Build.BuildId)'
-      displayName: 'Bash Script copy'
+    - job: Run
+      displayName: Run
+      pool:
+        vmImage: ubuntu-latest
+      steps:
+        - task: Docker@2
+          displayName: Login to Docker registry
+          inputs:
+            command: 'login'
+            containerRegistry: $(dockerRegistryServiceConnection)
+        - task: Docker@2
+          displayName: Run new container from image
+          inputs:
+            command: 'run'
+            arguments: '--restart unless-stopped --name $(ContainerName) -d -p 5000:80 -e "BingSearchSubscriptionKey=$(BingSearchSubscriptionKey)" -e "OpenAiSubscriptionKey=$(OpenAiSubscriptionKey)" -e "IzyAsUsername=$(IzyAsUsername)" -e "IzyAsPassword=$(IzyAsPassword)" $(registry)/$(imageRepository)/$(ContainerName):$(Build.BuildId)'
