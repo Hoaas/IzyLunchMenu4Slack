@@ -25,10 +25,37 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.MapGet("/kantine", async (IzyAsService izyAsService) => await izyAsService.GetMenu())
-    .WithName("kantine")
+    .WithName("/kantine")
+    .WithOpenApi();
+
+app.MapGet("/kantine/ukesmeny", async (
+        IzyAsService izyAsService,
+        AiService aiService) =>
+    {
+        var menu = await izyAsService.GetRawResponse();
+        var formattedMenu = await aiService.GetFormattedMenu(menu);
+        return formattedMenu;
+    })
+    .WithName("/kantine/ukesmeny")
+    .WithOpenApi();
+
+app.MapGet("/kantine/ukesmeny/slackwebhook", async (
+        string url,
+        IzyAsService izyAsService,
+        SlackService slackService,
+        AiService aiService) =>
+    {
+        var menu = await izyAsService.GetRawResponse();
+        var formattedMenu = await aiService.GetFormattedMenu(menu);
+
+        await slackService.SendAiFormattedMenuToSlack(formattedMenu, url);
+        
+        return TypedResults.Ok("👍");
+    })
+    .WithName("/kantine/ukesmeny/slackwebhook")
     .WithOpenApi();
 
 app.MapGet("/kantine/slackwebhook", async (
@@ -72,7 +99,7 @@ app.MapGet("/kantine/slackwebhook", async (
 
         return TypedResults.Ok("All ok!");
     })
-    .WithName("kantine/post-to-url")
+    .WithName("/kantine/slackwebhook")
     .WithOpenApi();
 
 app.Run();

@@ -20,20 +20,8 @@ public class IzyAsService
 
     public async Task<Dictionary<string, List<Dishes>>> GetMenu()
     {
-        var token = await GetToken();
-
-        _client.DefaultRequestHeaders.Authorization ??= new AuthenticationHeaderValue("Bearer", token);
-
-        var buildings = await GetListOfBuildings();
-
-        // Or like this if you need to get a specific building (and know the name)
-        // var building = buildings.Where(b => b.Name == "Workplace Oo").First();
-        var building = buildings.First();
-        
-        var canteens = await GetListOfCanteens(building.Id);
-
-        var canteen = canteens.First();
-        var menu = await GetMenuForCanteen(building.Id, canteen.Id);
+        var (buildingId, canteenId) = await GetBuildingAndCanteenId();
+        var menu = await GetMenuForCanteen(buildingId, canteenId);
 
         if (menu.body.week != ISOWeek.GetWeekOfYear(DateTime.Now))
         {
@@ -52,6 +40,31 @@ public class IzyAsService
         };
 
         return dict;
+    }
+
+    public async Task<string> GetRawResponse()
+    {
+        var (buildingId, canteenId) = await GetBuildingAndCanteenId();
+        
+        return await GetRawMenuForCanteen(buildingId, canteenId);
+    }
+
+    private async Task<(int BuildingId, int CanteenId)> GetBuildingAndCanteenId()
+    {
+        var token = await GetToken();
+
+        _client.DefaultRequestHeaders.Authorization ??= new AuthenticationHeaderValue("Bearer", token);
+
+        var buildings = await GetListOfBuildings();
+
+        // Or like this if you need to get a specific building (and know the name)
+        // var building = buildings.Where(b => b.Name == "Workplace Oo").First();
+        var building = buildings.First();
+        
+        var canteens = await GetListOfCanteens(building.Id);
+
+        var canteen = canteens.First();
+        return (building.Id, canteen.Id);
     }
 
     private async Task<string> GetToken()
@@ -100,13 +113,25 @@ public class IzyAsService
     
     private async Task<GetDishesResponse> GetMenuForCanteen(int buildingId, int canteenId)
     {
+        var response = await GetCanteenResponse(buildingId, canteenId);
+
+        return await response.Content.ReadFromJsonAsync<GetDishesResponse>();
+    }
+    
+    private async Task<string> GetRawMenuForCanteen(int buildingId, int canteenId)
+    {
+        var response = await GetCanteenResponse(buildingId, canteenId);
+
+        return await response.Content.ReadAsStringAsync();
+    }
+    
+    private async Task<HttpResponseMessage> GetCanteenResponse(int buildingId, int canteenId)
+    {
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/dishes");
         // var request = new HttpRequestMessage(HttpMethod.Get, "/api/dishes?canteen_id=" + canteenId);
 
         request.Headers.Add("building-id", buildingId.ToString());
 
-        var response = await _client.SendAsync(request);
-
-        return await response.Content.ReadFromJsonAsync<GetDishesResponse>();
+        return await _client.SendAsync(request);
     }
 }

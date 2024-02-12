@@ -12,6 +12,12 @@ public class SlackService
     {
         _client = clientFactory.CreateClient();
     }
+    
+    public async Task SendAiFormattedMenuToSlack(string formattedMenu, string url)
+    {
+        var message = new { text = "*Ukens meny formatert av ChatGPT*\n" + formattedMenu };
+        await _client.PostAsJsonAsync(url, message);
+    }
 
     public async Task SendToSlack(Dictionary<string, List<IzyToSlackDishDto>> menu, string url)
     {
