@@ -38,7 +38,7 @@ public class AiService
 
         var result = await api.GetChatCompletionsAsync(new ChatCompletionsOptions
         {
-            DeploymentName = "gpt-3.5-turbo",
+            DeploymentName = "gpt-4o",
             Messages =
             {
                 new ChatRequestUserMessage(message)
