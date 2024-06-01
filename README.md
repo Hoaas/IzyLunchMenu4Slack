@@ -14,3 +14,4 @@ You need to use a user account to get access, but this causes the user to be log
 
 [![Build Status](https://dev.azure.com/hoaas/GitHub%20Releases/_apis/build/status%2FHoaas.IzyLunchMenu4Slack?branchName=main)](https://dev.azure.com/hoaas/GitHub%20Releases/_build/latest?definitionId=11&branchName=main)
 
+🍝
