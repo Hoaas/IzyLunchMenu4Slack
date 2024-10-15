@@ -1,5 +1,6 @@
-﻿using Azure.AI.OpenAI;
+﻿using System.ClientModel;
 using Microsoft.Extensions.Options;
+using OpenAI;
 
 namespace IzyAsLunchMenu.Services;
 
@@ -34,17 +35,10 @@ public class AiService
 
     private async Task<string> GetResponseFromSingleMessage(string message)
     {
-        var api = new OpenAIClient(_apiKey);
+        var aiClient = new OpenAIClient(new ApiKeyCredential(_apiKey));
+        var client = aiClient.GetChatClient("gpt-4o");
+        var result = await client.CompleteChatAsync(message);
 
-        var result = await api.GetChatCompletionsAsync(new ChatCompletionsOptions
-        {
-            DeploymentName = "gpt-4o",
-            Messages =
-            {
-                new ChatRequestUserMessage(message)
-            }
-        });
-
-        return result.Value.Choices[0].Message.Content;
+        return result.Value.Content[0].Text;
     }
 }
