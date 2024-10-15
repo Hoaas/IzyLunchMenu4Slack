@@ -1,18 +1,16 @@
 ﻿using System.ClientModel;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Options;
+using OpenAI;
 
 namespace IzyAsLunchMenu.Services;
 
 public class AiService
 {
     private readonly string _apiKey;
-    private readonly string _endpoint;
 
     public AiService(IOptions<Config> options)
     {
         _apiKey = options.Value.OpenAiSubscriptionKey;
-        _endpoint = options.Value.OpenAiEndpoint;
     }
     
     public async Task<string?> OptimizeSearchTerm(string dishName)
@@ -37,7 +35,7 @@ public class AiService
 
     private async Task<string> GetResponseFromSingleMessage(string message)
     {
-        var aiClient = new AzureOpenAIClient(new Uri(_endpoint), new ApiKeyCredential(_apiKey));
+        var aiClient = new OpenAIClient(new ApiKeyCredential(_apiKey));
         var client = aiClient.GetChatClient("gpt-4o");
         var result = await client.CompleteChatAsync(message);
 
