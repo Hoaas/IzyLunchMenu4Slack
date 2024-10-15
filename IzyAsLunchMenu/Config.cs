@@ -9,4 +9,6 @@ public class Config
     public string IzyAsUsername { get; set; }
     
     public string IzyAsPassword { get; set; }
+    
+    public string OpenAiEndpoint { get; set; }
 }
