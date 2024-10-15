@@ -17,7 +17,7 @@ public class AiService
     {
         return await GetResponseFromSingleMessage(
             $"Create a better search term, in english, optimized for Bing Image Search for this dish: '{dishName}'. " +
-            $"Try to avoid using quotation marks.");
+            $"Try to avoid using quotation marks. Respond with only one search term, and only respond with the search term. Do not respond in a full sentence.");
     }
 
     public async Task<string> GetFormattedMenu(string menu)
